@@ -29,7 +29,7 @@ def create_user(user_id, username, name):
 
 def get_user(user_id):
     cursor.execute('''
-        SELECT * FROM users
+        SELECT user_id, username, name FROM users
         WHERE user_id = ?
     ''', (user_id, ))
     return cursor.fetchone()
