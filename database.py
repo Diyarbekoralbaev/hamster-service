@@ -88,12 +88,7 @@ def get_user_tokens(user_id):
         SELECT token FROM tokens
         WHERE user_id = ?
     ''', (user_id, ))
-    if cursor.fetchall() is not None:
-        return [
-            token[0] for token in cursor.fetchall()
-        ]
-    else:
-        return []
+    return [token[0] for token in cursor.fetchall()]
 
 def delete_users_tokens(user_id):
     cursor.execute('''
