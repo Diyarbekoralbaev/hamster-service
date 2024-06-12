@@ -85,7 +85,7 @@ def get_all_users():
 
 def get_user_tokens(user_id):
     cursor.execute('''
-        SELECT * FROM tokens
+        SELECT token FROM tokens
         WHERE user_id = ?
     ''', (user_id, ))
-    return cursor.fetchall()
+    return [token[0] for token in cursor.fetchall()]
