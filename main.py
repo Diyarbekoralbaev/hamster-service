@@ -39,10 +39,10 @@ channel_button = InlineKeyboardMarkup()
 channel_button.add(InlineKeyboardButton("Channel 1", url=f"https://t.me/{CHANNEL_1[1:]}"))
 channel_button.add(InlineKeyboardButton("Channel 2", url=f"https://t.me/{CHANNEL_2[1:]}"))
 
-def check_user_joining(user_id):
+async def check_user_joining(user_id):
     try:
-        channel1 = bot.get_chat_member(CHANNEL_1, user_id)
-        channel2 = bot.get_chat_member(CHANNEL_2, user_id)
+        channel1 = await bot.get_chat_member(CHANNEL_1, user_id)
+        channel2 = await bot.get_chat_member(CHANNEL_2, user_id)
         if not channel1.status in ("administrator", "creator", "member") or not channel2.status in ("administrator", "creator", "member"):
             return False
         return True
@@ -54,7 +54,7 @@ async def send_welcome(message: types.Message, state: FSMContext):
     await state.finish()
     if database.get_user(message.from_user.id) is None:
         database.create_user(message.from_user.id, message.from_user.username, message.from_user.full_name)
-    if check_user_joining(message.from_user.id):
+    if await check_user_joining(message.from_user.id):
         await message.reply("Welcome to the bot", reply_markup=main_keyboard)
     else:
         await message.reply("Please join the channels to use the bot", reply_markup=channel_button)
@@ -62,7 +62,7 @@ async def send_welcome(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=AddToken.waiting_for_token)
 async def process_token(message: types.Message, state: FSMContext):
-    if check_user_joining(message.from_user.id):
+    if await check_user_joining(message.from_user.id):
         if message.text == "Cancel":
             await state.finish()
             await message.reply("Cancelled", reply_markup=main_keyboard)
@@ -78,7 +78,7 @@ async def process_token(message: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda message: message.text == "Add token", state='*')
 async def process_add_token(message: types.Message):
-    if check_user_joining(message.from_user.id):
+    if await check_user_joining(message.from_user.id):
         await message.reply("Send me your token", reply_markup=cancel_button)
         await AddToken.waiting_for_token.set()
     else:
@@ -87,7 +87,7 @@ async def process_add_token(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Remove token", state='*')
 async def process_remove_token(message: types.Message):
-    if check_user_joining(message.from_user.id):
+    if await check_user_joining(message.from_user.id):
         tokens = database.get_user_tokens(message.from_user.id)
         if tokens:
             keyboard = InlineKeyboardMarkup()
@@ -102,7 +102,7 @@ async def process_remove_token(message: types.Message):
 
 @dp.callback_query_handler(lambda query: query.data.startswith("remove_token_"))
 async def process_remove_token_callback(query: types.CallbackQuery):
-    if check_user_joining(query.from_user.id):
+    if await check_user_joining(query.from_user.id):
         token = query.data.split("_")[-1]
         database.delete_token(token)
         await query.message.reply("Token removed successfully", reply_markup=main_keyboard)
@@ -113,7 +113,7 @@ async def process_remove_token_callback(query: types.CallbackQuery):
 
 @dp.message_handler(lambda message: message.text == "Profile", state='*')
 async def process_profile(message: types.Message):
-    if check_user_joining(message.from_user.id):
+    if await check_user_joining(message.from_user.id):
         user = database.get_user(message.from_user.id)
         tokens = database.get_user_tokens(message.from_user.id)
         await message.reply(f"User ID: {user[0]}\nUsername: {user[1]}\nName: {user[2]}\nTokens: {', '.join(tokens)}", reply_markup=main_keyboard)
@@ -125,7 +125,7 @@ async def process_profile(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Help", state='*')
 async def process_help(message: types.Message):
-    if check_user_joining(message.from_user.id):
+    if await check_user_joining(message.from_user.id):
         await message.reply("You can see a tutorial on how to use the bot here: https://bit.ly/hamster-run-always", reply_markup=main_keyboard)
     else:
         await message.reply("Please join the channels to use the bot", reply_markup=channel_button)
