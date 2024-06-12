@@ -1,7 +1,6 @@
 import sqlite3
 
-db = sqlite3.connect('database.db', check_same_thread=False)
-db.autocommit = True
+db = sqlite3.connect('database.db', check_same_thread=False, isolation_level=None)
 db.execute('PRAGMA foreign_keys = ON')
 
 cursor = db.cursor()
