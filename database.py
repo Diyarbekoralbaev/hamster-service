@@ -89,3 +89,9 @@ def get_user_tokens(user_id):
         WHERE user_id = ?
     ''', (user_id, ))
     return [token[0] for token in cursor.fetchall()]
+
+def delete_users_tokens(user_id):
+    cursor.execute('''
+        DELETE FROM tokens
+        WHERE user_id = ?
+    ''', (user_id, ))
