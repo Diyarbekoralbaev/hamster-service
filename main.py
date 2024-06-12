@@ -9,7 +9,8 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 import database
 
 API_TOKEN = '7376912095:AAHesY6_KUdm4hO4JPWrgUy8Xd7p1gDQmkQ'
-CHANNEL_ID = "@Diyarbek_Blog"
+CHANNEL_1 = "@Diyarbek_Blog"
+CHANNEL_2 = "@AralTech_dev"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -35,18 +36,19 @@ cancel_button = ReplyKeyboardMarkup(resize_keyboard=True)
 cancel_button.add(KeyboardButton("Cancel"))
 
 channel_button = InlineKeyboardMarkup()
-channel_button.add(InlineKeyboardButton("Join", url=f"https://t.me/{CHANNEL_ID[1:]}"))
+channel_button.add(InlineKeyboardButton("Channel 1", url=f"https://t.me/{CHANNEL_1[1:]}"))
+channel_button.add(InlineKeyboardButton("Channel 2", url=f"https://t.me/{CHANNEL_2[1:]}"))
 
 @dp.message_handler(commands='start', state='*')
 async def send_welcome(message: types.Message, state: FSMContext):
     await state.finish()
     if database.get_user(message.from_user.id) is None:
         database.create_user(message.from_user.id, message.from_user.username, message.from_user.full_name)
-        await message.reply("You are registered!")
     try:
-        member = await bot.get_chat_member(CHANNEL_ID, message.from_user.id)
-        if not member.status in ("administrator", "creator", "member"):
-            await message.reply("Please join the channel/group to use the bot.\n" + CHANNEL_ID, reply_markup=channel_button)
+        channel1 = await bot.get_chat_member(CHANNEL_1, message.from_user.id)
+        channel2 = await bot.get_chat_member(CHANNEL_2, message.from_user.id)
+        if not channel1.status in ("administrator", "creator", "member") or not channel2.status in ("administrator", "creator", "member"):
+            await message.reply("Please join our channels", reply_markup=channel_button)
         else:
             await message.reply("Welcome", reply_markup=main_keyboard)
     except Exception as e:
