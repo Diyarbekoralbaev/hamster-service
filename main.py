@@ -113,14 +113,17 @@ async def process_remove_token_callback(query: types.CallbackQuery):
 
 @dp.message_handler(lambda message: message.text == "Profile", state='*')
 async def process_profile(message: types.Message):
-    if await check_user_joining(message.from_user.id):
-        user = database.get_user(message.from_user.id)
-        tokens = database.get_user_tokens(message.from_user.id)
-        await message.reply(f"User ID: {user[0]}\nUsername: {user[1]}\nName: {user[2]}\nTokens: {', '.join(tokens)}", reply_markup=main_keyboard)
-    else:
-        database.delete_user(message.from_user.id)
-        database.delete_users_tokens(message.from_user.id)
-        await message.reply("Please join the channels to use the bot", reply_markup=channel_button)
+    try:
+        if await check_user_joining(message.from_user.id):
+            user = database.get_user(message.from_user.id)
+            tokens = database.get_user_tokens(message.from_user.id)
+            await message.reply(f"User ID: {user[0]}\nUsername: {user[1]}\nName: {user[2]}\nTokens: {', '.join(tokens)}", reply_markup=main_keyboard)
+        else:
+            database.delete_user(message.from_user.id)
+            database.delete_users_tokens(message.from_user.id)
+            await message.reply("Please join the channels to use the bot", reply_markup=channel_button)
+    except Exception as e:
+        await message.reply("Uhh, something went wrong, please restart the bot\n/start", reply_markup=main_keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Help", state='*')
